@@ -58,13 +58,34 @@ def update_value(index: tuple, board: np.array, candidates: dict)-> np.array:
     for tup in indices_to_check:
         if tup in candidates and fill in candidates[tup]:
             candidates[tup].remove(fill)
-    return board, candidates
+    return board, {
+        key:candidates[key] for key in candidates.keys() if len(candidates[key]) > 0
+        }
+
+def fill_board(
+    board: np.array, 
+    candidates: dict, 
+    ncandidates: int =1,
+    increase: bool = True
+)-> bool:
+    if len(candidates) == 0:
+        return False
+    for tup in candidates:
+        if len(candidates[tup]) == ncandidates:
+            increase = False
+            break
+    if increase:
+        ncandidates += 1
+    print(ncandidates, '\n', candidates)
+    fill_board(*update_value(tup, board, candidates), ncandidates)
+    return True
+
 
 if __name__ == '__main__':
     board = load_board(
         '5...8..49...5...3..673....115..........2.8..........187....415..3...2...49..5...3'
     )
     candidates = get_candidates(board)
-    print(board)
-    board, candidates = update_value((2, 5), board, candidates)
-    print(board)
+    out = fill_board(board, candidates)
+    if out:
+        print(board)
