@@ -3,6 +3,10 @@ import numpy as np
 def get_indices(N: int)-> list:
     return [(i, j) for i in range(N) for j in range(N)]
 
+def list_to_array(k: int, N: int = 9)-> tuple:
+    '''from index of a flat list to coordinates in 2D array'''
+    return k // N, k % N
+
 def load_board(initial: str, N: int = 9)-> np.array:
     board = np.zeros((9,9), dtype=int)
     j= 0
@@ -10,22 +14,23 @@ def load_board(initial: str, N: int = 9)-> np.array:
         if char == '.':
             pass
         else:
-            i = k // N
-            j = k % N
+            i, j = list_to_array(k, N)
             board[i, j] = int(char)
     return board
 
 def get_cell(index: tuple, N: int = 9):
+    '''coordinates of index' sqrt(N)xsqrt(N) cell (default 3x3 )'''
     cell_size = int(np.sqrt(N))
     return (index[0] // cell_size, index[1] // cell_size)
 
 def get_affected_indices(index: tuple, N: int = 9)-> list:
     '''affected positions according to sudoku rules'''
+    curr_cell = get_cell(index, N)
     rows = {(index[0], j) for j in range(N)}
     cols = {(j, index[1]) for j in range(N)}
     cell = {
         (i, j)  for i in range(N) for j in range(N)\
-            if get_cell(index, N) == get_cell((i, j), N)
+            if get_cell((i, j), N) == curr_cell
     }
     return list(
         rows.union(cols).union(cell)
@@ -76,7 +81,8 @@ def fill_board(
             break
     if increase:
         ncandidates += 1
-    print(ncandidates, '\n', candidates)
+        fill_board(board, candidates, ncandidates)
+    print(ncandidates, tup, '\n', candidates)
     fill_board(*update_value(tup, board, candidates), ncandidates)
     return True
 
