@@ -1,8 +1,5 @@
 import numpy as np
 
-def get_indices(N: int)-> list:
-    return [(i, j) for i in range(N) for j in range(N)]
-
 def list_to_array(k: int, N: int = 9)-> tuple:
     '''from index of a flat list to coordinates in 2D array'''
     return k // N, k % N
@@ -43,7 +40,7 @@ def get_occupied_vals(index: tuple, board: np.array, N: int = 9)-> list:
 
 def get_candidates(board: np.array, N: int = 9)-> dict:
     '''board element at index is empty (0)'''
-    indices = get_indices(N)
+    indices = [(i, j) for i in range(N) for j in range(N)]
     candidates = {}
     for index in indices:
         if board[index] == 0:
