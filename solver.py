@@ -1,5 +1,8 @@
 import numpy as np
 
+def get_indices(N: int)-> list:
+    return [(i, j) for i in range(N) for j in range(N)]
+
 def list_to_array(k: int, N: int = 9)-> tuple:
     '''from index of a flat list to coordinates in 2D array'''
     return k // N, k % N
@@ -40,7 +43,7 @@ def get_occupied_vals(index: tuple, board: np.array, N: int = 9)-> list:
 
 def get_candidates(board: np.array, N: int = 9)-> dict:
     '''board element at index is empty (0)'''
-    indices = [(i, j) for i in range(N) for j in range(N)]
+    indices = get_indices(N)
     candidates = {}
     for index in indices:
         if board[index] == 0:
@@ -81,6 +84,13 @@ def fill_singles(board: np.array, candidates: dict)-> tuple:
     else:
         return board, candidates
 
+def reconcile_board(board: np.array, candidates: dict):
+    '''is board viable, meaning theres no empty position with no candidates'''
+    indices = [tup for tup in get_indices(board.shape[0]) if board[tup] == 0]
+    return len(
+        [key for key in indices if key not in candidates.keys()]
+        ) == 0
+
 def fill_board(
     board: np.array, 
     candidates: dict, 
@@ -90,15 +100,12 @@ def fill_board(
     if len(candidates) == 0:
         return True
     board, candidates = fill_singles(board, candidates)
-    for tup in candidates:
-        if len(candidates[tup]) == ncandidates:
-            increase = False
-            break
-    if increase:
-        ncandidates += 1
-        fill_board(board, candidates, ncandidates)
-    #print(ncandidates, tup, '\n', candidates)
-    fill_board(*update_value(tup, board, candidates), ncandidates)
+    if reconcile_board(board, candidates):
+        tup, select = candidates.popitem()
+        k = 0
+        if not fill_board(*update_value(tup, board, candidates, select[k])):
+            k +=1
+            
     return False
 
 
