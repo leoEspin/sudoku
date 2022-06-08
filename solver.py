@@ -54,15 +54,14 @@ def get_candidates(board: np.array, N: int = 9)-> dict:
 
 def update_value(
     index: tuple, 
+    fill: int,
     board: np.array, 
     candidates: dict, 
-    ind: int = 0
 )-> np.array:
     '''
     fill board at index with a valid  value and update relevant entries
     in candidates
     '''
-    fill = candidates[index][ind]
     board[index] = fill
     indices_to_check = get_affected_indices(index, board.shape[0])
     for tup in indices_to_check:
@@ -80,7 +79,7 @@ def fill_singles(board: np.array, candidates: dict)-> tuple:
             singles = True
             break
     if singles:
-        return fill_singles(*update_value(tup, board, candidates))
+        return fill_singles(*update_value(tup, candidates[tup][0], board, candidates))
     else:
         return board, candidates
 
@@ -94,18 +93,19 @@ def reconcile_board(board: np.array, candidates: dict):
 def fill_board(
     board: np.array, 
     candidates: dict, 
-    ncandidates: int =1,
+    which: int =0,
     increase: bool = True
 )-> bool:
+    print(board)
+    print(candidates)
     if len(candidates) == 0:
         return True
     board, candidates = fill_singles(board, candidates)
     if reconcile_board(board, candidates):
-        tup, select = candidates.popitem()
-        k = 0
-        if not fill_board(*update_value(tup, board, candidates, select[k])):
-            k +=1
-            
+        index, values = candidates.popitem()
+        if not fill_board(*update_value(index, values[which], board, candidates)):
+            fill_board(*update_value(index, values[which +1], board, candidates))
+
     return False
 
 
