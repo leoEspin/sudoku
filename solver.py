@@ -52,20 +52,37 @@ def get_candidates(board: np.array, N: int = 9)-> dict:
             ]
     return candidates
 
-def update_value(index: tuple, board: np.array, candidates: dict)-> np.array:
+def update_value(
+    index: tuple, 
+    board: np.array, 
+    candidates: dict, 
+    ind: int = 0
+)-> np.array:
     '''
-    for an index with a valid answer, fill the answer value and update
-    relevant candidates
+    fill board at index with a valid  value and update relevant entries
+    in candidates
     '''
-    fill = candidates[index][0] # THE valid answer
+    fill = candidates[index][ind]
     board[index] = fill
     indices_to_check = get_affected_indices(index, board.shape[0])
     for tup in indices_to_check:
         if tup in candidates and fill in candidates[tup]:
             candidates[tup].remove(fill)
     return board, {
-        key:candidates[key] for key in candidates.keys() if len(candidates[key]) > 0
+        key:candidates[key] for key in candidates.keys() if len(candidates[key]) > 0\
+            and key != index
         }
+
+def fill_singles(board: np.array, candidates: dict)-> tuple:
+    singles = False
+    for tup in candidates:
+        if len(candidates[tup]) == 1:
+            singles = True
+            break
+    if singles:
+        return fill_singles(*update_value(tup, board, candidates))
+    else:
+        return board, candidates
 
 def fill_board(
     board: np.array, 
@@ -74,7 +91,8 @@ def fill_board(
     increase: bool = True
 )-> bool:
     if len(candidates) == 0:
-        return False
+        return True
+    board, candidates = fill_singles(board, candidates)
     for tup in candidates:
         if len(candidates[tup]) == ncandidates:
             increase = False
@@ -82,9 +100,9 @@ def fill_board(
     if increase:
         ncandidates += 1
         fill_board(board, candidates, ncandidates)
-    print(ncandidates, tup, '\n', candidates)
+    #print(ncandidates, tup, '\n', candidates)
     fill_board(*update_value(tup, board, candidates), ncandidates)
-    return True
+    return False
 
 
 if __name__ == '__main__':
