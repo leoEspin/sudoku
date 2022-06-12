@@ -1,3 +1,4 @@
+from copy import deepcopy
 import numpy as np
 
 def get_indices(N: int)-> list:
@@ -62,6 +63,7 @@ def update_value(
     fill board at index with a valid  value and update relevant entries
     in candidates
     '''
+    candidates = deepcopy(candidates)
     board[index] = fill
     indices_to_check = get_affected_indices(index, board.shape[0])
     for tup in indices_to_check:
@@ -83,29 +85,34 @@ def fill_singles(board: np.array, candidates: dict)-> tuple:
     else:
         return board, candidates
 
-def reconcile_board(board: np.array, candidates: dict):
+def is_viable(board: np.array, candidates: dict):
     '''is board viable, meaning theres no empty position with no candidates'''
     indices = [tup for tup in get_indices(board.shape[0]) if board[tup] == 0]
     return len(
         [key for key in indices if key not in candidates.keys()]
-        ) == 0
+    ) == 0
+
+def count_empties(board: np.array)-> int:
+    inds = get_indices(board.shape[0])
+    return len([1 for x in inds if board[x] == 0])
 
 def fill_board(
     board: np.array, 
     candidates: dict, 
-    which: int =0,
-    increase: bool = True
 )-> bool:
-    print(board)
     print(candidates)
-    if len(candidates) == 0:
+    if count_empties(board) == 0:
         return True
-    board, candidates = fill_singles(board, candidates)
-    if reconcile_board(board, candidates):
-        index, values = candidates.popitem()
-        if not fill_board(*update_value(index, values[which], board, candidates)):
-            fill_board(*update_value(index, values[which +1], board, candidates))
-
+    if not is_viable(board, candidates):
+        return False
+    position, values = candidates.popitem()
+    for i in range(len(values)):
+        fill = values[i]
+        print(position, fill)
+        print(board)
+        if fill_board(*update_value(position, fill, board, candidates)):
+            return True
+        board[position] = 0
     return False
 
 
