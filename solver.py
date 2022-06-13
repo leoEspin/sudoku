@@ -17,7 +17,7 @@ class sudoku():
         else:
             os.system('clear')
         #delay for screen output in seconds. Can be changed with setDelay
-        self.delay = 0.05 
+        self.delay = 0.1 
         self._show_board()
         if initial is not None:
             self.load_board(initial)
@@ -134,28 +134,30 @@ class sudoku():
             return True
         if candidates == None:
             candidates = self.get_candidates()
+        candidates = self.fill_singles(candidates)
         if not self.is_viable(candidates):
             return False
-        position, values = candidates.popitem()
-        for i in range(len(values)):
-            fill = values[i]
-            if self.fill_board(self.update_value(position, fill, candidates)):
-                return True
-            self.board[position] = 0
-            self._show_board()
-        return False
+        if len(candidates) > 0:
+            position, values = candidates.popitem()
+            for i in range(len(values)):
+                fill = values[i]
+                if self.fill_board(self.update_value(position, fill, candidates)):
+                    return True
+                self.board[position] = 0
+                self._show_board()
+        else:
+            return self._count_empties() == 0
 
-
-# def fill_singles(board: np.array, candidates: dict)-> tuple:
-#     singles = False
-#     for tup in candidates:
-#         if len(candidates[tup]) == 1:
-#             singles = True
-#             break
-#     if singles:
-#         return fill_singles(*update_value(tup, candidates[tup][0], board, candidates))
-#     else:
-#         return board, candidates
+    def fill_singles(self, candidates: dict)-> tuple:
+        singles = False
+        for tup in candidates:
+            if len(candidates[tup]) == 1:
+                singles = True
+                break
+        if singles:
+            return self.fill_singles(self.update_value(tup, candidates[tup][0], candidates))
+        else:
+            return candidates
 
 
 

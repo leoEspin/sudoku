@@ -1,5 +1,5 @@
 # Sudoku solver
-The solver is implemented in a class, and uses backtraking to explore the solutions space. To use it instanciate the class
+The solver is implemented in a class, and uses backtraking to explore the solution space. To use it instanciate the class
 
 ```python
 test = sudoku(initial_position)
