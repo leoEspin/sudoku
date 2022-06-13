@@ -1,126 +1,167 @@
+import os
+import platform
+import time
 from copy import deepcopy
 import numpy as np
 
-def get_indices(N: int)-> list:
-    return [(i, j) for i in range(N) for j in range(N)]
-
-def list_to_array(k: int, N: int = 9)-> tuple:
-    '''from index of a flat list to coordinates in 2D array'''
-    return k // N, k % N
-
-def load_board(initial: str, N: int = 9)-> np.array:
-    board = np.zeros((9,9), dtype=int)
-    j= 0
-    for k, char in enumerate(initial):
-        if char == '.':
-            pass
+class sudoku():
+    def __init__(self,N:int = 9):
+        self.size = N
+        self.board = np.zeros((9,9), dtype=int)
+        self.indices = [(i, j) for i in range(N) for j in range(N)]
+        currOS = platform.system()
+        if currOS == 'Windows':
+            os.system('cls')
         else:
-            i, j = list_to_array(k, N)
-            board[i, j] = int(char)
-    return board
+            os.system('clear')
+        #delay for screen output in seconds. Can be changed with setDelay
+        self.delay = 0.1 
+        self.toString()
 
-def get_cell(index: tuple, N: int = 9):
-    '''coordinates of index' sqrt(N)xsqrt(N) cell (default 3x3 )'''
-    cell_size = int(np.sqrt(N))
-    return (index[0] // cell_size, index[1] // cell_size)
-
-def get_affected_indices(index: tuple, N: int = 9)-> list:
-    '''affected positions according to sudoku rules'''
-    curr_cell = get_cell(index, N)
-    rows = {(index[0], j) for j in range(N)}
-    cols = {(j, index[1]) for j in range(N)}
-    cell = {
-        (i, j)  for i in range(N) for j in range(N)\
-            if get_cell((i, j), N) == curr_cell
-    }
-    return list(
-        rows.union(cols).union(cell)
-    )
+    def setDelay(self,secs):
+        self.delay=secs
+            
+    def toString(self):
+        '''
+        Prints the current status of the chess board on the screen
+        '''
+        output=[]
+        row=['*'] + ['-' for k in range(self.size)] + ['*']
+        hedge=[' '] + ['*' for k in range(self.size)] + [' ']
+        output.append(hedge)
+        for i in range(self.size):
+            output.append(row.copy())
+        output.append(hedge)    
+        
+        for tup in self.indices:
+            #flipping vertically (rows) for visual representation:
+            val = self.board[tup]
+            output[1 + tup[0]][1 + tup[1]] = str(val) if val != 0  else '-'
+            
+        time.sleep(self.delay)
+        #position cursor at top left corner
+        print("\033[1;1H")
+        for i in range(self.size + 2):
+            #still have to join each row into single strings
+            print(''.join(output[i]))
     
-def get_occupied_vals(index: tuple, board: np.array, N: int = 9)-> list:
-    '''what are the used values according to sudoku rules'''
-    values = {board[tup] for tup in get_affected_indices(index, N)}
-    return [x for x in values if x != 0]
+    def _list_to_array(self, k: int)-> tuple:
+        '''from index of a flat list to coordinates in 2D array'''
+        return k // self.size, k % self.size
 
-def get_candidates(board: np.array, N: int = 9)-> dict:
-    '''board element at index is empty (0)'''
-    indices = get_indices(N)
-    candidates = {}
-    for index in indices:
-        if board[index] == 0:
-            candidates[index] = [
-                x for x in range(1, 10) if x not in get_occupied_vals(index, board)
-            ]
-    return candidates
+    def load_board(self, initial: str)-> np.array:
+        j= 0
+        for k, char in enumerate(initial):
+            if char == '.':
+                pass
+            else:
+                i, j = self._list_to_array(k)
+                self.board[i, j] = int(char)
+        self.toString()
+        return
 
-def update_value(
-    index: tuple, 
-    fill: int,
-    board: np.array, 
-    candidates: dict, 
-)-> np.array:
-    '''
-    fill board at index with a valid  value and update relevant entries
-    in candidates
-    '''
-    candidates = deepcopy(candidates)
-    board[index] = fill
-    indices_to_check = get_affected_indices(index, board.shape[0])
-    for tup in indices_to_check:
-        if tup in candidates and fill in candidates[tup]:
-            candidates[tup].remove(fill)
-    return board, {
-        key:candidates[key] for key in candidates.keys() if len(candidates[key]) > 0\
-            and key != index
+    def get_cell(self, index: tuple):
+        '''coordinates of index' sqrt(N)xsqrt(N) cell (default 3x3 )'''
+        cell_size = int(np.sqrt(self.size))
+        return (index[0] // cell_size, index[1] // cell_size)
+
+    def get_affected_indices(self, index: tuple)-> list:
+        '''affected positions according to sudoku rules'''
+        curr_cell = self.get_cell(index)
+        rows = {(index[0], j) for j in range(self.size)}
+        cols = {(j, index[1]) for j in range(self.size)}
+        cell = {
+            (i, j)  for i in range(self.size) for j in range(self.size)\
+                if self.get_cell((i, j)) == curr_cell
         }
+        return list(
+            rows.union(cols).union(cell)
+        )
+    
+    def get_occupied_vals(self, index: tuple)-> list:
+        '''what are the used values according to sudoku rules'''
+        values = {self.board[tup] for tup in self.get_affected_indices(index)}
+        return [x for x in values if x != 0]
 
-def fill_singles(board: np.array, candidates: dict)-> tuple:
-    singles = False
-    for tup in candidates:
-        if len(candidates[tup]) == 1:
-            singles = True
-            break
-    if singles:
-        return fill_singles(*update_value(tup, candidates[tup][0], board, candidates))
-    else:
-        return board, candidates
+    def get_candidates(self)-> dict:
+        '''board element at index is empty (0)'''
+        candidates = {}
+        for index in self.indices:
+            if self.board[index] == 0:
+                candidates[index] = [
+                    x for x in range(1, 10) if x not in self.get_occupied_vals(index)
+                ]
+        return candidates
 
-def is_viable(board: np.array, candidates: dict):
-    '''is board viable, meaning theres no empty position with no candidates'''
-    indices = [tup for tup in get_indices(board.shape[0]) if board[tup] == 0]
-    return len(
-        [key for key in indices if key not in candidates.keys()]
-    ) == 0
+    def update_value(
+        self,
+        index: tuple, 
+        fill: int,
+        candidates: dict, 
+    )-> np.array:
+        '''
+        fill board at index with a valid  value and update relevant entries
+        in candidates
+        '''
+        candidates = deepcopy(candidates)
+        self.board[index] = fill
+        indices_to_check = self.get_affected_indices(index)
+        for tup in indices_to_check:
+            if tup in candidates and fill in candidates[tup]:
+                candidates[tup].remove(fill)
+        return {
+            key:candidates[key] for key in candidates.keys() if len(candidates[key]) > 0\
+                and key != index
+        }
+    
+    def is_viable(self, candidates: dict):
+        '''is board viable, meaning theres no empty position with no candidates'''
+        indices = [tup for tup in self.indices if self.board[tup] == 0]
+        return len(
+            [key for key in indices if key not in candidates.keys()]
+        ) == 0    
 
-def count_empties(board: np.array)-> int:
-    inds = get_indices(board.shape[0])
-    return len([1 for x in inds if board[x] == 0])
+    def count_empties(self)-> int:
+        return len([1 for x in self.indices if self.board[x] == 0])
 
-def fill_board(
-    board: np.array, 
-    candidates: dict, 
-)-> bool:
-    print(candidates)
-    if count_empties(board) == 0:
-        return True
-    if not is_viable(board, candidates):
-        return False
-    position, values = candidates.popitem()
-    for i in range(len(values)):
-        fill = values[i]
-        print(position, fill)
-        print(board)
-        if fill_board(*update_value(position, fill, board, candidates)):
+    def fill_board(self, candidates: dict)-> bool:
+        if self.count_empties() == 0:
             return True
-        board[position] = 0
-    return False
+        if not self.is_viable(candidates):
+            return False
+        position, values = candidates.popitem()
+        for i in range(len(values)):
+            fill = values[i]
+            if self.fill_board(self.update_value(position, fill, candidates)):
+                self.toString()
+                return True
+            self.toString()
+            self.board[position] = 0
+            self.toString()
+        return False
+
+
+# def fill_singles(board: np.array, candidates: dict)-> tuple:
+#     singles = False
+#     for tup in candidates:
+#         if len(candidates[tup]) == 1:
+#             singles = True
+#             break
+#     if singles:
+#         return fill_singles(*update_value(tup, candidates[tup][0], board, candidates))
+#     else:
+#         return board, candidates
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
-    board = load_board(
+    test = sudoku()
+    test.load_board(
         '5...8..49...5...3..673....115..........2.8..........187....415..3...2...49..5...3'
     )
-    candidates = get_candidates(board)
-    out = fill_board(board, candidates)
-    if out:
-        print(board)
+    test.fill_board(test.get_candidates())
