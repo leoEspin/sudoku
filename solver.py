@@ -5,8 +5,9 @@ from copy import deepcopy
 import numpy as np
 
 class sudoku():
-    def __init__(self, N:int = 9):
+    def __init__(self, N: int = 9, show_animation: bool = True):
         self.size = N
+        self.animate = show_animation
         self.board = np.zeros((N, N), dtype=int)
         self.indices = [(i, j) for i in range(N) for j in range(N)]
         self.cells = {index: self._get_cell(index) for index in self.indices}
@@ -26,25 +27,26 @@ class sudoku():
         '''
         Prints the current status of the board on the screen
         '''
-        output=[]
-        row=['|'] + ['-' for k in range(self.size)] + ['|']
-        hedge=['+'] + ['-' for k in range(self.size)] + ['+']
-        output.append(hedge)
-        for i in range(self.size):
-            output.append(row.copy())
-        output.append(hedge)    
-        
-        for tup in self.indices:
-            #flipping vertically (rows) for visual representation:
-            val = self.board[tup]
-            output[1 + tup[0]][1 + tup[1]] = str(val) if val != 0  else '-'
+        if self.animate:
+            output=[]
+            row=['|'] + ['-' for k in range(self.size)] + ['|']
+            hedge=['+'] + ['-' for k in range(self.size)] + ['+']
+            output.append(hedge)
+            for i in range(self.size):
+                output.append(row.copy())
+            output.append(hedge)    
             
-        time.sleep(self.delay)
-        #position cursor at top left corner
-        print("\033[1;1H")
-        for i in range(self.size + 2):
-            #still have to join each row into single strings
-            print(''.join(output[i]))
+            for tup in self.indices:
+                #flipping vertically (rows) for visual representation:
+                val = self.board[tup]
+                output[1 + tup[0]][1 + tup[1]] = str(val) if val != 0  else '-'
+                
+            time.sleep(self.delay)
+            #position cursor at top left corner
+            print("\033[1;1H")
+            for i in range(self.size + 2):
+                #still have to join each row into single strings
+                print(''.join(output[i]))
     
     def _list_to_array(self, k: int)-> tuple:
         '''from index of a flat list to coordinates in 2D array'''
