@@ -5,7 +5,7 @@ from copy import deepcopy
 import numpy as np
 
 class sudoku():
-    def __init__(self, N: int = 9, show_animation: bool = True):
+    def __init__(self, initial: str = None, N: int = 9, show_animation: bool = True):
         self.size = N
         self.animate = show_animation
         self.board = np.zeros((N, N), dtype=int)
@@ -19,6 +19,8 @@ class sudoku():
         #delay for screen output in seconds. Can be changed with setDelay
         self.delay = 0.05 
         self._show_board()
+        if initial is not None:
+            self.load_board(initial)
 
     def setDelay(self,secs):
         self.delay=secs
@@ -163,8 +165,7 @@ class sudoku():
 
 
 if __name__ == '__main__':
-    test = sudoku()
-    test.load_board(
+    test = sudoku(
         '5...8..49...5...3..673....115..........2.8..........187....415..3...2...49..5...3'
     )
     test.fill_board()
