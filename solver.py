@@ -17,12 +17,12 @@ class sudoku():
             os.system('clear')
         #delay for screen output in seconds. Can be changed with setDelay
         self.delay = 0.05 
-        self.show_board()
+        self._show_board()
 
     def setDelay(self,secs):
         self.delay=secs
             
-    def show_board(self):
+    def _show_board(self):
         '''
         Prints the current status of the board on the screen
         '''
@@ -58,7 +58,7 @@ class sudoku():
             else:
                 i, j = self._list_to_array(k)
                 self.board[i, j] = int(char)
-        self.show_board()
+        self._show_board()
         return
 
     def _get_cell(self, index: tuple):
@@ -105,7 +105,7 @@ class sudoku():
         '''
         candidates = deepcopy(candidates)
         self.board[index] = fill
-        self.show_board()
+        self._show_board()
         indices_to_check = self._get_affected_indices(index)
         for tup in indices_to_check:
             if tup in candidates and fill in candidates[tup]:
@@ -138,7 +138,7 @@ class sudoku():
             if self.fill_board(self.update_value(position, fill, candidates)):
                 return True
             self.board[position] = 0
-            self.show_board()
+            self._show_board()
         return False
 
 
