@@ -5,9 +5,9 @@ from copy import deepcopy
 import numpy as np
 
 class sudoku():
-    def __init__(self,N:int = 9):
+    def __init__(self, N:int = 9):
         self.size = N
-        self.board = np.zeros((9,9), dtype=int)
+        self.board = np.zeros((N, N), dtype=int)
         self.indices = [(i, j) for i in range(N) for j in range(N)]
         self.cells = {index: self._get_cell(index) for index in self.indices}
         currOS = platform.system()
