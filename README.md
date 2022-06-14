@@ -22,3 +22,5 @@ test = sudoku('1  4', N=4)
 ```
 
 and the solver will find a solution for that 4x4 board and initial position.
+
+Leonardo Espin, 6/14/2022
