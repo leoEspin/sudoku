@@ -55,13 +55,14 @@ class sudoku():
         return k // self.size, k % self.size
 
     def load_board(self, initial: str)-> np.array:
-        j= 0
-        for k, char in enumerate(initial):
-            if char == '.':
-                pass
-            else:
+        n = min(len(initial), self.size**2)
+        for k in range(n):
+            char = initial[k]
+            if 47 < ord(char) < 58:
                 i, j = self._list_to_array(k)
                 self.board[i, j] = int(char)
+            else:
+                pass
         self._show_board()
         return
 
