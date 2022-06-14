@@ -23,4 +23,6 @@ test = sudoku('1  4', N=4)
 
 and the solver will find a solution for that 4x4 board and initial position.
 
-Leonardo Espin, 6/14/2022
+Copyright (c) Leonardo Espin. All right reserved.
+
+The code in this repo is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
