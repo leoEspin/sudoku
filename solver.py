@@ -7,6 +7,7 @@ import numpy as np
 class sudoku():
     def __init__(self, initial: str = None, N: int = 9, show_animation: bool = True):
         self.size = N
+        self.cell_size = int(np.sqrt(N))
         self.animate = show_animation
         self.board = np.zeros((N, N), dtype=int)
         self.indices = [(i, j) for i in range(N) for j in range(N)]
@@ -28,25 +29,29 @@ class sudoku():
     def _show_board(self):
         '''
         Prints the current status of the board on the screen
+        This is implemented as an ascii array of characters, not strings, 
+        since individual characters need to be updated at each step
         '''
         if self.animate:
             output=[]
-            row=['|'] + ['-' for k in range(self.size)] + ['|']
-            hedge=['+'] + ['-' for k in range(self.size)] + ['+']
+            row = ['-', ' ']*(self.cell_size -1) + ['-', '|']
+            row = ['|'] + row*self.cell_size
+            hedge = ['-' for k in range(2*self.cell_size -1)] + ['+']
+            hedge = ['+'] + hedge*self.cell_size
             output.append(hedge)
-            for i in range(self.size):
-                output.append(row.copy())
-            output.append(hedge)    
+            for k in range(self.cell_size):
+                for i in range(self.cell_size):
+                    output.append(row.copy())
+                output.append(hedge)    
             
             for tup in self.indices:
-                #flipping vertically (rows) for visual representation:
                 val = self.board[tup]
-                output[1 + tup[0]][1 + tup[1]] = str(val) if val != 0  else '-'
+                output[1 + tup[0] + tup[0]//self.cell_size][1 + 2*tup[1]] = str(val) if val != 0  else '-'
                 
             time.sleep(self.delay)
             #position cursor at top left corner
             print("\033[1;1H")
-            for i in range(self.size + 2):
+            for i in range(self.size + self.cell_size +1):
                 #still have to join each row into single strings
                 print(''.join(output[i]))
     
@@ -89,7 +94,7 @@ class sudoku():
         return [x for x in values if x != 0]
 
     def get_candidates(self)-> dict:
-        '''board element at index is empty (0)'''
+        '''acceptable values for each empty position in the board'''
         candidates = {}
         for index in self.indices:
             if self.board[index] == 0:
@@ -150,6 +155,7 @@ class sudoku():
             return self._count_empties() == 0
 
     def fill_singles(self, candidates: dict)-> tuple:
+        '''fills all positions where only one value is admissible'''
         singles = False
         for tup in candidates:
             if len(candidates[tup]) == 1:
@@ -159,12 +165,6 @@ class sudoku():
             return self.fill_singles(self.update_value(tup, candidates[tup][0], candidates))
         else:
             return candidates
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
