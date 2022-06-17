@@ -73,8 +73,7 @@ class sudoku():
 
     def _get_cell(self, index: tuple):
         '''coordinates of index' sqrt(N)xsqrt(N) cell (default 3x3 )'''
-        cell_size = int(np.sqrt(self.size))
-        return (index[0] // cell_size, index[1] // cell_size)
+        return (index[0] // self.cell_size, index[1] // self.cell_size)
 
     def _get_affected_indices(self, index: tuple)-> list:
         '''affected positions according to sudoku rules'''
