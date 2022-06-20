@@ -3,17 +3,6 @@ class Solution:
         '''from index of a flat list to coordinates in 2D array'''
         return k // self.size, k % self.size
 
-    def load_board(self, initial: str):
-        n = min(len(initial), self.size**2)
-        for k in range(n):
-            char = initial[k]
-            if 47 < ord(char) < 58:
-                i, j = self._list_to_array(k)
-                self.board[i, j] = int(char)
-            else:
-                pass
-        return
-
     def _get_cell(self, index: tuple):
         '''coordinates of index' sqrt(N)xsqrt(N) cell (default 3x3 )'''
         return (index[0] // self.cell_size, index[1] // self.cell_size)
@@ -93,18 +82,6 @@ class Solution:
                 self.board[position[0]][position[1]] = '.'
         else:
             return self._count_empties() == 0
-
-    def fill_singles(self, candidates: dict)-> tuple:
-        '''fills all positions where only one value is admissible'''
-        singles = False
-        for tup in candidates:
-            if len(candidates[tup]) == 1:
-                singles = True
-                break
-        if singles:
-            return self.fill_singles(self.update_value(tup, candidates[tup][0], candidates))
-        else:
-            return candidates
 
     def solveSudoku(self, boardo) -> None:
         """
