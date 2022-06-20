@@ -1,7 +1,6 @@
 import os
 import platform
 import time
-from copy import deepcopy
 import numpy as np
 
 class sudoku():
@@ -112,7 +111,7 @@ class sudoku():
         fill board at index with a valid  value and update relevant entries
         in candidates
         '''
-        candidates = deepcopy(candidates)
+        candidates = {key: candidates[key].copy() for key in candidates.keys()}
         self.board[index] = fill
         self._show_board()
         indices_to_check = self._get_affected_indices(index)
