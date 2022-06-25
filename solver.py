@@ -1,14 +1,14 @@
 import os
 import platform
 import time
-import numpy as np
+from math import sqrt
 
 class sudoku():
     def __init__(self, initial: str = None, N: int = 9, show_animation: bool = True):
         self.size = N
-        self.cell_size = int(np.sqrt(N))
+        self.cell_size = int(sqrt(N))
         self.animate = show_animation
-        self.board = np.zeros((N, N), dtype=int)
+        self.board = [['-' for i in range(N)] for j in range(N)]
         self.indices = [(i, j) for i in range(N) for j in range(N)]
         self.cells = {index: self._get_cell(index) for index in self.indices}
         currOS = platform.system()
@@ -44,8 +44,7 @@ class sudoku():
                 output.append(hedge)    
             
             for tup in self.indices:
-                val = self.board[tup]
-                output[1 + tup[0] + tup[0]//self.cell_size][1 + 2*tup[1]] = str(val) if val != 0  else '-'
+                output[1 + tup[0] + tup[0]//self.cell_size][1 + 2*tup[1]] = self.board[tup[0]][tup[1]]
                 
             time.sleep(self.delay)
             #position cursor at top left corner
@@ -58,13 +57,13 @@ class sudoku():
         '''from index of a flat list to coordinates in 2D array'''
         return k // self.size, k % self.size
 
-    def load_board(self, initial: str)-> np.array:
+    def load_board(self, initial: str)-> None:
         n = min(len(initial), self.size**2)
         for k in range(n):
             char = initial[k]
             if 47 < ord(char) < 58:
                 i, j = self._list_to_array(k)
-                self.board[i, j] = int(char)
+                self.board[i][j] = char
             else:
                 pass
         self._show_board()
@@ -88,16 +87,16 @@ class sudoku():
     
     def _get_occupied_vals(self, index: tuple)-> list:
         '''what are the used values according to sudoku rules'''
-        values = {self.board[tup] for tup in self._get_affected_indices(index)}
-        return [x for x in values if x != 0]
+        values = {self.board[tup[0]][tup[1]] for tup in self._get_affected_indices(index)}
+        return [x for x in values if x != '-']
 
     def get_candidates(self)-> dict:
         '''acceptable values for each empty position in the board'''
         candidates = {}
         for index in self.indices:
-            if self.board[index] == 0:
+            if self.board[index[0]][index[1]] == '-':
                 candidates[index] = [
-                    x for x in range(1, 10) if x not in self._get_occupied_vals(index)
+                    str(x) for x in range(1, 10) if str(x) not in self._get_occupied_vals(index)
                 ]
         return candidates
 
@@ -106,13 +105,13 @@ class sudoku():
         index: tuple, 
         fill: int,
         candidates: dict, 
-    )-> np.array:
+    )-> dict:
         '''
         fill board at index with a valid  value and update relevant entries
         in candidates
         '''
         candidates = {key: candidates[key].copy() for key in candidates.keys()}
-        self.board[index] = fill
+        self.board[index[0]][index[1]] = fill
         self._show_board()
         indices_to_check = self._get_affected_indices(index)
         for tup in indices_to_check:
@@ -125,13 +124,13 @@ class sudoku():
     
     def is_viable(self, candidates: dict):
         '''is board viable, meaning theres no empty position with no candidates'''
-        indices = [tup for tup in self.indices if self.board[tup] == 0]
+        indices = [tup for tup in self.indices if self.board[tup[0]][tup[1]] == '-']
         return len(
             [key for key in indices if key not in candidates.keys()]
         ) == 0    
 
     def _count_empties(self)-> int:
-        return len([1 for x in self.indices if self.board[x] == 0])
+        return len([1 for x in self.indices if self.board[x[0]][x[1]] == '-'])
 
     def fill_board(self, candidates: dict = None)-> bool:
         if self._count_empties() == 0:
@@ -147,7 +146,7 @@ class sudoku():
                 fill = values[i]
                 if self.fill_board(self.update_value(position, fill, candidates)):
                     return True
-                self.board[position] = 0
+                self.board[position[0]][position[1]] = '-'
                 self._show_board()
         else:
             return self._count_empties() == 0
