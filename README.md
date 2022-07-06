@@ -17,7 +17,7 @@ To search for a solution, run `test.fill_board()`. The solver will show an anima
 
 ![Solver](solver.gif)
 
- The final solution will be stored in `test.board` as a numpy array.
+ The final solution will be stored in `test.board`.
 
 The solver can be initialized with board sizes smaller than the standard 9, however for things to make sense, the board size has be a perfect square, and the digits used in the initial position have to be ajusted accordingly. For example, the following statement is valid
 
